@@ -1,0 +1,25 @@
+{
+	"name": "count-hashes",
+	"version": "0.0.1",
+	"description": "Didactic example to count hashes using map-reduce",
+	"homepage": "https://github.com/alexfernandez/count-hashes",
+	"contributors": ["Alex Fernández <alexfernandeznpm@gmail.com>"],
+	"license": "MIT",
+	"main": "index.js",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/alexfernandez/count-hashes"
+	},
+	"dependencies": {
+		"testing": "*",
+		"prototypes": "*"
+	},
+	"keywords" : ["didactic", "hash", "map-reduce"],
+	"engines": {
+		"node": "*"
+	},
+	"scripts": {
+		"test": "node test.js"
+	},
+	"private": true
+}
