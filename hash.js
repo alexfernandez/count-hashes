@@ -8,10 +8,19 @@ var testing = require('testing');
 exports.hashAndCountAs = function(integer)
 {
 	var hash = crypto.createHash('sha256');
-	hash.update(integer);
+	hash.update(String(integer));
 	var digest = hash.digest('hex');
 	return countAsIn(digest);
 };
+
+function testHash(callback)
+{
+	var count = exports.hashAndCountAs(5);
+	testing.assertEquals(count, 4, 'Not enough as', callback);
+	count = exports.hashAndCountAs(1);
+	testing.assertEquals(count, 5, 'Too many as', callback);
+	testing.success(callback);
+}
 
 function countAsIn(string)
 {
@@ -31,9 +40,17 @@ function testCount(callback)
 	testing.success(callback);
 }
 
+function test(callback)
+{
+	testing.run([
+		testHash,
+		testCount,
+	], callback);
+}
+
 // run tests if invoked directly
 if (__filename == process.argv[1])
 {
-	testCount(testing.show);
+	test(testing.show);
 }
 
