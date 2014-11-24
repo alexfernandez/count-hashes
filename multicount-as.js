@@ -5,6 +5,10 @@ var hash = require('./hash.js');
 var numCPUs = require('os').cpus().length;
 var cluster = require('cluster');
 
+var max = 0;
+var received = 0;
+var totalAs = 0;
+
 
 function readArgs(args)
 {
@@ -13,7 +17,7 @@ function readArgs(args)
 		console.error('Invalid number of parameters');
 		return usage();
 	}
-	var max = parseInt(args[0]);
+	max = parseInt(args[0]);
 	if (!max)
 	{
 		console.error('Invalid max %s', args[0]);
@@ -21,35 +25,36 @@ function readArgs(args)
 	}
 	var slice = max / numCPUs;
 	var index = 0;
-	var received = 0;
-	var totalAs = 0;
 	for (var id in cluster.workers)
 	{
 		var worker = cluster.workers[id];
-		worker.on('message', function(message)
-		{
-			console.log('Received %j', message);
-			if (!message || !message.total)
-			{
-				return console.error('Invalid message received in master: %s', message);
-			}
-			received += 1;
-			totalAs += message.total;
-			if (received == numCPUs)
-			{
-				var estimated = max * 64 / 16;
-				var diff = Math.abs(estimated - totalAs);
-				var percent = 100 * diff / totalAs;
-				console.log('Total As: %s, estimated %s, difference %s (%s %)', totalAs, estimated, diff, percent.toFixed(2));
-				process.exit('0');
-			}
-		});
+		worker.on('message', reduce);
 		worker.send({
 			min: index * slice,
 			max: (index + 1) * slice,
 		});
 		index += 1;
 	}
+}
+
+function reduce(message)
+{
+	console.log('Received %j', message);
+	if (!message || !message.total)
+	{
+		return console.error('Invalid message received in master: %s', message);
+	}
+	received += 1;
+	totalAs += message.total;
+	if (received != numCPUs)
+	{
+		return;
+	}
+	var estimated = max * 64 / 16;
+	var diff = Math.abs(estimated - totalAs);
+	var percent = 100 * diff / totalAs;
+	console.log('Total As: %s, estimated %s, difference %s (%s %)', totalAs, estimated, diff, percent.toFixed(2));
+	process.exit('0');
 }
 
 function usage()
